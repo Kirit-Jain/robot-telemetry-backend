@@ -1,0 +1,28 @@
+services:
+  # This is our FastAPI application
+  api:
+    build: ./api  # Tells docker-compose to build the image from the api/Dockerfile
+    ports:
+      - "8000:8000" # Map our host machine's port 8000 to the container's port 8000
+    environment:
+      # This is CRITICAL. We pass the database URL to our API container.
+      # It connects to the 'db' service at port 5432.
+      DATABASE_URL: "postgresql://user:password@db:5432/robot_db"
+    depends_on:
+      - db # Tells docker-compose to start the 'db' service *before* the 'api' service
+
+  # This is our PostgreSQL database
+  db:
+    image: postgres:15 # Use the official PostgreSQL image
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persist database data on our host machine
+    environment:
+      # These are the credentials our API will use (FIXED)
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: robot_db
+    ports:
+      - "5432:5432" # Map host port 5432 for (optional) external access
+
+volumes:
+  postgres_data: # Defines the persistent volume
